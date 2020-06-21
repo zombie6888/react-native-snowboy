@@ -16,3 +16,4 @@ public enum  MsgEnum {
         return MsgEnum.values()[i];
     }
 }
+

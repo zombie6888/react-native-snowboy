@@ -1,5 +1,6 @@
 package ai.kitt.snowboy.audio;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -8,6 +9,7 @@ import ai.kitt.snowboy.MsgEnum;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -21,23 +23,40 @@ public class RecordingThread {
 
     private static final String ACTIVE_RES = Constants.ACTIVE_RES;
     private static final String ACTIVE_UMDL = Constants.ACTIVE_UMDL;
-    //private static final String ACTIVE_PMDL = Constants.ACTIVE_PMDL;
     
     private boolean shouldContinue;
     private AudioDataReceivedListener listener = null;
     private Handler handler = null;
     private Thread thread;
     
-    private static String strEnvWorkSpace = Constants.DEFAULT_WORK_SPACE;
-    //private String activeModel = strEnvWorkSpace+ACTIVE_PMDL;
-	private String activeModel = strEnvWorkSpace+ACTIVE_UMDL;
-    private String commonRes = strEnvWorkSpace+ACTIVE_RES;   
+    private String strEnvWorkSpace;
+    private String activeModel;    
+    private String commonRes;   
     
-    private SnowboyDetect detector = new SnowboyDetect(commonRes, activeModel);
+    private SnowboyDetect detector;
+    private MediaPlayer player = new MediaPlayer();
 
-    public RecordingThread(Handler handler, AudioDataReceivedListener listener) {
+    public RecordingThread(Handler handler, AudioDataReceivedListener listener, String strEnvWorkSpace) {
         this.handler = handler;
         this.listener = listener;
+        this.strEnvWorkSpace = strEnvWorkSpace;
+        this.activeModel = strEnvWorkSpace + ACTIVE_UMDL;
+        this.commonRes = strEnvWorkSpace + ACTIVE_RES;
+        this.detector = new SnowboyDetect(commonRes, activeModel);
+
+        try {
+            detector.SetSensitivity("0.8,0.80");
+            detector.SetAudioGain(1);
+            detector.ApplyFrontend(true);
+        } catch (Exception e) {
+           Log.v(TAG, "detector error", e);
+        }   
+        // try {
+        //     player.setDataSource(strEnvWorkSpace+"ding.wav");
+        //     player.prepare();
+        // } catch (IOException e) {
+        //     Log.e(TAG, "Playing ding sound error", e);
+        // }
     }
 
     private void sendMessage(MsgEnum what, Object obj){
@@ -48,10 +67,6 @@ public class RecordingThread {
     }
 
     public void startRecording() {
-        detector.setSensitivity("0.60");
-        //detector.setAudioGain(1);
-        detector.applyFrontend(true);
-
         if (thread != null)
             return;
 
@@ -99,14 +114,12 @@ public class RecordingThread {
         if (null != listener) {
             listener.start();
         }
-        Log.v(TAG, "Start recording");
+        Log.v(TAG, "Start recording");   
 
         long shortsRead = 0;
+        detector.Reset();
         while (shouldContinue) {
-            if(android.os.Build.VERSION.SDK_INT >= 23)
-                record.read(audioBuffer, 0, audioBuffer.length, AudioRecord.READ_BLOCKING);
-            else
-                record.read(audioBuffer, 0, audioBuffer.length);
+            record.read(audioBuffer, 0, audioBuffer.length);
 
             if (null != listener) {
                 listener.onAudioDataReceived(audioBuffer, audioBuffer.length);
@@ -119,19 +132,21 @@ public class RecordingThread {
             shortsRead += audioData.length;
 
             // Snowboy hotword detection.
-            int result = detector.runDetection(audioData, audioData.length);
+            int result = detector.RunDetection(audioData, audioData.length);
 
             if (result == -2) {
                 // post a higher CPU usage:
-                sendMessage(MsgEnum.MSG_VAD_NOSPEECH, null);
+                // sendMessage(MsgEnum.MSG_VAD_NOSPEECH, null);
             } else if (result == -1) {
                 sendMessage(MsgEnum.MSG_ERROR, "Unknown Detection Error");
+                Log.e(TAG, "error: " + MsgEnum.MSG_ERROR);
             } else if (result == 0) {
                 // post a higher CPU usage:
-                sendMessage(MsgEnum.MSG_VAD_SPEECH, null);
+                // sendMessage(MsgEnum.MSG_VAD_SPEECH, null);
             } else if (result > 0) {
                 sendMessage(MsgEnum.MSG_ACTIVE, null);
                 Log.i("Snowboy: ", "Hotword " + Integer.toString(result) + " detected!");
+                player.start();
             }
         }
 

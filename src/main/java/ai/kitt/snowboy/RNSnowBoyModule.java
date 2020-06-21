@@ -6,9 +6,10 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import android.util.Log;
+import ai.kitt.snowboy.Constants;
 
 import android.os.Handler;
 import android.os.Message;
@@ -17,14 +18,18 @@ import ai.kitt.snowboy.MsgEnum;
 import ai.kitt.snowboy.audio.AudioDataSaver;
 import ai.kitt.snowboy.audio.RecordingThread;
 import ai.kitt.snowboy.AppResCopy;
+import android.os.Environment;
+import java.io.File;
 
 public class RNSnowBoyModule extends ReactContextBaseJavaModule {
     private RecordingThread recordingThread;
 	private ReactApplicationContext mReactContext;
 	private int preVolume = -1;
+	private String targetAssetsDir;
 	
 	public RNSnowBoyModule(ReactApplicationContext reactContext) {
-        super(reactContext);
+		super(reactContext);
+		Log.v(TAG, "files dir " + reactContext.getFilesDir());
 		mReactContext = reactContext;
 	}
 	private static final String TAG = "Snowboy";
@@ -35,12 +40,13 @@ public class RNSnowBoyModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void initHotword(Promise promise) {
+    public void initHotword(Promise promise) {		
         if (ActivityCompat.checkSelfPermission(mReactContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(mReactContext,
-                        Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            AppResCopy.copyResFromAssetsToSD(mReactContext);
+                        Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {			
+			this.targetAssetsDir = mReactContext.getFilesDir().getAbsolutePath() + File.separatorChar + Constants.ASSETS_RES_DIR + File.separatorChar;			
+			AppResCopy.copyResFromAssetsToStorage(mReactContext, this.targetAssetsDir);
 			try {
 				recordingThread = new RecordingThread(new Handler() {
 					@Override
@@ -71,21 +77,28 @@ public class RNSnowBoyModule extends ReactContextBaseJavaModule {
 								break;
 						}
 					}
-				}, new AudioDataSaver());
-				promise.resolve(true);
+				}, new AudioDataSaver(targetAssetsDir), targetAssetsDir);				
+				promise.resolve(true);				
 			} catch(Exception e) {
 				String errorMessage = e.getMessage();
+				Log.v(TAG, "error: " + errorMessage);
 				promise.reject(errorMessage);
 			}
-        }
+			Log.v(TAG, "permissions granted");
+        } else {
+			Log.v(TAG, "permissions not granted" +  ActivityCompat.checkSelfPermission(mReactContext,
+			Manifest.permission.WRITE_EXTERNAL_STORAGE) + " " + ActivityCompat.checkSelfPermission(mReactContext,
+			Manifest.permission.RECORD_AUDIO) + " " + PackageManager.PERMISSION_GRANTED);
+		}
 
     }
 
     @ReactMethod
     public void start() {
-        Log.v(TAG, "Start recording");
+		Log.v(TAG, "Start recording");
 
         if(recordingThread !=null) {
+			Log.v(TAG, "RecordingThread running");
 			recordingThread.startRecording();
         }
     }

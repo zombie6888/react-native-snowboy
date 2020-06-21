@@ -8,7 +8,7 @@ import java.io.InputStream;
 
 public class AppResCopy {
     private final static String TAG = AppResCopy.class.getSimpleName();
-    private static String envWorkSpace = Constants.DEFAULT_WORK_SPACE;
+    private static String envWorkSpace = Constants.ASSETS_RES_DIR;
 
     private static void copyFilesFromAssets(Context context, String assetsSrcDir, String sdcardDstDir, boolean override) {
         try {
@@ -56,6 +56,10 @@ public class AppResCopy {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void copyResFromAssetsToStorage(Context context, String path) {
+        copyFilesFromAssets(context, Constants.ASSETS_RES_DIR, path+"/", true);
     }
 
     public static void copyResFromAssetsToSD(Context context) {

@@ -39,75 +39,79 @@ public class SnowboyDetect {
     this(snowboyJNI.new_SnowboyDetect(resource_filename, model_str), true);
   }
 
-  public boolean reset() {
+  public boolean Reset() {
     return snowboyJNI.SnowboyDetect_Reset(swigCPtr, this);
   }
 
-  public int runDetection(String data, boolean is_end) {
+  public int RunDetection(String data, boolean is_end) {
     return snowboyJNI.SnowboyDetect_RunDetection__SWIG_0(swigCPtr, this, data, is_end);
   }
 
-  public int runDetection(String data) {
+  public int RunDetection(String data) {
     return snowboyJNI.SnowboyDetect_RunDetection__SWIG_1(swigCPtr, this, data);
   }
 
-  public int runDetection(float[] data, int array_length, boolean is_end) {
+  public int RunDetection(float[] data, int array_length, boolean is_end) {
     return snowboyJNI.SnowboyDetect_RunDetection__SWIG_2(swigCPtr, this, data, array_length, is_end);
   }
 
-  public int runDetection(float[] data, int array_length) {
+  public int RunDetection(float[] data, int array_length) {
     return snowboyJNI.SnowboyDetect_RunDetection__SWIG_3(swigCPtr, this, data, array_length);
   }
 
-  public int runDetection(short[] data, int array_length, boolean is_end) {
+  public int RunDetection(short[] data, int array_length, boolean is_end) {
     return snowboyJNI.SnowboyDetect_RunDetection__SWIG_4(swigCPtr, this, data, array_length, is_end);
   }
 
-  public int runDetection(short[] data, int array_length) {
+  public int RunDetection(short[] data, int array_length) {
     return snowboyJNI.SnowboyDetect_RunDetection__SWIG_5(swigCPtr, this, data, array_length);
   }
 
-  public int runDetection(int[] data, int array_length, boolean is_end) {
+  public int RunDetection(int[] data, int array_length, boolean is_end) {
     return snowboyJNI.SnowboyDetect_RunDetection__SWIG_6(swigCPtr, this, data, array_length, is_end);
   }
 
-  public int runDetection(int[] data, int array_length) {
+  public int RunDetection(int[] data, int array_length) {
     return snowboyJNI.SnowboyDetect_RunDetection__SWIG_7(swigCPtr, this, data, array_length);
   }
 
-  public void setSensitivity(String sensitivity_str) {
+  public void SetSensitivity(String sensitivity_str) {
     snowboyJNI.SnowboyDetect_SetSensitivity(swigCPtr, this, sensitivity_str);
   }
 
-  public String getSensitivity() {
+  public void SetHighSensitivity(String high_sensitivity_str) {
+    snowboyJNI.SnowboyDetect_SetHighSensitivity(swigCPtr, this, high_sensitivity_str);
+  }
+
+  public String GetSensitivity() {
     return snowboyJNI.SnowboyDetect_GetSensitivity(swigCPtr, this);
   }
 
-  public void setAudioGain(float audio_gain) {
+  public void SetAudioGain(float audio_gain) {
     snowboyJNI.SnowboyDetect_SetAudioGain(swigCPtr, this, audio_gain);
   }
 
-  public void updateModel() {
+  public void UpdateModel() {
     snowboyJNI.SnowboyDetect_UpdateModel(swigCPtr, this);
   }
 
-  public int numHotwords() {
+  public int NumHotwords() {
     return snowboyJNI.SnowboyDetect_NumHotwords(swigCPtr, this);
   }
 
-  public void applyFrontend(boolean apply_frontend) {
+  public void ApplyFrontend(boolean apply_frontend) {
     snowboyJNI.SnowboyDetect_ApplyFrontend(swigCPtr, this, apply_frontend);
   }
 
-  public int sampleRate() {
+  public int SampleRate() {
     return snowboyJNI.SnowboyDetect_SampleRate(swigCPtr, this);
   }
 
-  public int numChannels() {
+  public int NumChannels() {
     return snowboyJNI.SnowboyDetect_NumChannels(swigCPtr, this);
   }
 
-  public int bitsPerSample() {
+  public int BitsPerSample() {
     return snowboyJNI.SnowboyDetect_BitsPerSample(swigCPtr, this);
   }
 
